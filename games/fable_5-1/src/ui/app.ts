@@ -63,8 +63,13 @@ const describeGameOver = (over: GameOver, player: Color): { headline: string; de
   }
 };
 
+export interface MountedApp {
+  /** Switches from the start screen to the board for a game that was started programmatically, e.g. restored. */
+  revealGame(): void;
+}
+
 /** Mounts the start screen and game view into `container` and keeps them in sync with `game`. */
-export const mountApp = (container: HTMLElement, game: Game): void => {
+export const mountApp = (container: HTMLElement, game: Game): MountedApp => {
   let orientation: Color = WHITE;
   let confirmingResign = false;
   let chosenColor: Color = WHITE;
@@ -329,4 +334,13 @@ export const mountApp = (container: HTMLElement, game: Game): void => {
   });
 
   container.replaceChildren(app);
+
+  return {
+    revealGame: () => {
+      board.clearSelection();
+      confirmingResign = false;
+      orientation = game.playerColor;
+      showGame();
+    },
+  };
 };

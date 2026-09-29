@@ -1,7 +1,7 @@
 import { uciToMove, moveCaptured, moveFrom, moveTo, movePromotion, moveToUci, type Move } from "../engine/move";
 import { Position, type GameStatus, type GameStatusKind } from "../engine/position";
 import { moveToSan } from "../engine/san";
-import { WHITE, opposite, type Color, type Square } from "../engine/types";
+import { BLACK, WHITE, opposite, type Color, type Square } from "../engine/types";
 import type { Difficulty } from "../engine/search";
 
 export interface MoveProvider {
@@ -25,6 +25,20 @@ export interface GameOver {
 /** Piece types captured by each colour, indexed by the capturing side. */
 export type CapturedPieces = readonly [readonly number[], readonly number[]];
 
+/** Everything needed to replay a game from the start position; the shape used for save and restore. */
+export interface GameSnapshot {
+  version: 1;
+  playerColor: Color;
+  difficulty: Difficulty;
+  /** Moves in UCI notation, from the standard start position. */
+  moves: string[];
+  resigned: boolean;
+}
+
+export type GameResult = "1-0" | "0-1" | "1/2-1/2" | "*";
+
+const DIFFICULTIES: readonly Difficulty[] = ["easy", "medium", "hard", "expert"];
+
 export interface GameOptions {
   /** Pause before asking the engine, so the browser can paint the player's move first. */
   engineDelayMs?: number;
@@ -32,6 +46,19 @@ export interface GameOptions {
 
 const sleep = (ms: number): Promise<void> =>
   ms <= 0 ? Promise.resolve() : new Promise((resolve) => setTimeout(resolve, ms));
+
+const parseSnapshot = (value: unknown): GameSnapshot => {
+  if (typeof value !== "object" || value === null) throw new Error("Saved game must be an object");
+  const { version, playerColor, difficulty, moves, resigned } = value as Record<string, unknown>; // Object checked above; each field is validated below.
+  if (version !== 1) throw new Error("Unsupported saved game version");
+  if (playerColor !== WHITE && playerColor !== BLACK) throw new Error("Saved game has an invalid player colour");
+  if (typeof difficulty !== "string" || !DIFFICULTIES.includes(difficulty as Difficulty)) { // Membership checked by includes.
+    throw new Error("Saved game has an invalid difficulty");
+  }
+  if (!Array.isArray(moves) || !moves.every((m) => typeof m === "string")) throw new Error("Saved game has invalid moves");
+  if (typeof resigned !== "boolean") throw new Error("Saved game has an invalid resigned flag");
+  return { version, playerColor, difficulty: difficulty as Difficulty, moves: moves as string[], resigned }; // Element types verified above.
+};
 
 /**
  * The game controller: owns the position and the move history, decides whose turn it is,
@@ -45,6 +72,7 @@ export class Game {
   private readonly listeners = new Set<() => void>();
   private thinking = false;
   private resigned = false;
+  private started = false;
   private error: string | null = null;
   private pendingEngine: Promise<void> | null = null;
   /** Bumped by newGame and undo so a late engine reply for an old position is dropped. */
@@ -125,19 +153,49 @@ export class Game {
   }
 
   newGame(color: Color, difficulty: Difficulty): void {
-    this.generation++;
-    this.pos = Position.fromFen(Position.START_FEN);
-    this.uciMoves.length = 0;
-    this.sanMoves.length = 0;
-    this.capturedBy[0].length = 0;
-    this.capturedBy[1].length = 0;
-    this.color = color;
-    this.level = difficulty;
-    this.thinking = false;
-    this.resigned = false;
-    this.error = null;
+    this.reset(color, difficulty);
     this.emit();
     if (this.pos.turn !== color) this.scheduleEngineMove();
+  }
+
+  /** Null until a game has been started or restored. */
+  exportState(): GameSnapshot | null {
+    if (!this.started) return null;
+    return {
+      version: 1,
+      playerColor: this.color,
+      difficulty: this.level,
+      moves: [...this.uciMoves],
+      resigned: this.resigned,
+    };
+  }
+
+  /** PGN-style result of the current game; "*" while it is unfinished. */
+  result(): GameResult {
+    const over = this.gameOver();
+    if (over === null) return "*";
+    if (over.winner === undefined) return "1/2-1/2";
+    return over.winner === WHITE ? "1-0" : "0-1";
+  }
+
+  /** Replaces the game with a snapshot. Throws, leaving the current game untouched, when it is invalid. */
+  importState(value: unknown): void {
+    const snapshot = parseSnapshot(value);
+    // Validate the whole replay on a scratch position before touching live state.
+    const scratch = Position.fromFen(Position.START_FEN);
+    for (const uci of snapshot.moves) {
+      const move = uciToMove(scratch, uci);
+      if (move === null) throw new Error(`Illegal move in saved game: ${uci}`);
+      scratch.makeMove(move);
+    }
+    this.reset(snapshot.playerColor, snapshot.difficulty);
+    for (const uci of snapshot.moves) {
+      const move = uciToMove(this.pos, uci);
+      if (move !== null) this.apply(move);
+    }
+    this.resigned = snapshot.resigned;
+    this.emit();
+    if (this.pos.turn !== this.color && !this.resigned && this.gameOver() === null) this.scheduleEngineMove();
   }
 
   /** Legal moves from a square for the side to move; empty when the player cannot act. */
@@ -215,6 +273,21 @@ export class Game {
     this.thinking = false;
     this.resigned = true;
     this.emit();
+  }
+
+  private reset(color: Color, difficulty: Difficulty): void {
+    this.generation++;
+    this.pos = Position.fromFen(Position.START_FEN);
+    this.uciMoves.length = 0;
+    this.sanMoves.length = 0;
+    this.capturedBy[0].length = 0;
+    this.capturedBy[1].length = 0;
+    this.color = color;
+    this.level = difficulty;
+    this.thinking = false;
+    this.resigned = false;
+    this.error = null;
+    this.started = true;
   }
 
   private scheduleEngineMove(): void {
