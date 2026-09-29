@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-instrument-sans);
+  --font-display: var(--font-fraunces);
+}
+
+@theme {
+  --color-ink: #171a1e;
+  --color-ink-raised: #1f2328;
+  --color-ink-line: #30353c;
+  --color-parchment: #ece4d3;
+  --color-muted: #a8a193;
+  --color-square-light: #e8dbbd;
+  --color-square-dark: #8a7a56;
+  --color-walnut: #3b2d20;
+  --color-walnut-edge: #5a4530;
+  --color-brass: #c9a55c;
+  --color-brass-bright: #dcbb72;
+  --color-check: #d2493b;
+}
+
+body {
+  background-color: var(--color-ink);
+  color: var(--color-parchment);
+}
+
+@keyframes thinking-pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+.thinking-dot {
+  animation: thinking-pulse 1.2s ease-in-out infinite;
+}
+
+.thinking-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.thinking-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thinking-dot {
+    animation: none;
+    opacity: 0.7;
+  }
+}

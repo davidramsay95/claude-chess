@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.next/
+.wrangler/
+.dev.vars
+.env
+.env.*
+*.tsbuildinfo
+.DS_Store
+.playwright-mcp/
