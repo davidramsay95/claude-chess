@@ -4,6 +4,8 @@
   "main": "worker/src/index.ts",
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat"],
+  "routes": [{ "pattern": "claude-chess.com", "custom_domain": true }],
+  "vars": { "BETTER_AUTH_URL": "https://claude-chess.com" },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
@@ -13,7 +15,7 @@
     {
       "binding": "DB",
       "database_name": "claude-chess",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "489494dc-c18e-48b3-a096-27d543d36f9f",
       "migrations_dir": "worker/migrations"
     }
   ]
