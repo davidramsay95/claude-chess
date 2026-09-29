@@ -38,6 +38,8 @@ for (const game of games) {
   if (!skipInstall) {
     runNpm(gameDirectory, ["ci"]);
   }
+  // A stale export from an earlier run would be picked up by the game's own typecheck.
+  rmSync(join(gameDirectory, plan.outputDirectory), { recursive: true, force: true });
   runNpm(gameDirectory, plan.buildArgs, plan.env);
   cpSync(join(gameDirectory, plan.outputDirectory), join(playDirectory, game.slug), { recursive: true });
 }
