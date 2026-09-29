@@ -53,6 +53,11 @@ describe("POST /api/games", () => {
     expect(saved.state).toEqual(validGame.state);
   });
 
+  it("accepts a model slug with a date suffix", async () => {
+    const response = await postGame({ ...validGame, modelSlug: "opus_5-5_20260929" });
+    expect(response.status).toBe(201);
+  });
+
   it.each([
     ["a missing title", { ...validGame, title: "" }],
     ["a model slug that is not in the models format", { ...validGame, modelSlug: "../etc" }],

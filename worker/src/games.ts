@@ -2,7 +2,7 @@ import { jsonResponse, problemResponse } from "./problem.ts";
 
 export const MAX_BODY_BYTES = 256 * 1024;
 
-const MODEL_SLUG_PATTERN = /^[a-z]+_\d+-\d+$/;
+const MODEL_SLUG_PATTERN = /^[a-z]+_\d+-\d+(?:_\d{8})?$/;
 const ALLOWED_RESULTS = new Set(["1-0", "0-1", "1/2-1/2", "*"]);
 const MAX_TITLE_LENGTH = 100;
 
