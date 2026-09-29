@@ -7,6 +7,7 @@ Hosts the chess games written by each model in `games/` behind one switcher, ser
 - `games/<model>_<version>-<subversion>/` one self-contained game per model. Drop in a new folder with the same naming format and it appears in the switcher on the next build. Each must be a Vite or Next.js project.
 - `apps/shell/` the switcher page that loads the selected game in a frame at `/play/<slug>/`.
 - `worker/` the API: Better Auth sign-in, the D1-backed games API, and D1 migrations in `worker/migrations/`.
+- `docs/save-bridge-protocol.md` the postMessage contract between the shell and each game, used to save and load games.
 - `scripts/` discovers games, builds each under its own sub-path, and writes `dist/games.json`.
 
 ## Commands
@@ -29,6 +30,10 @@ Cloudflare Workers Builds should use `npm ci && npm run build:ci` as the build c
 
 Create `.dev.vars` (gitignored) with `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL=http://localhost:8787`, then apply migrations with `npx wrangler d1 migrations apply claude-chess --local`. Google and GitHub sign-in need `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`; a provider is enabled only when both of its values are set.
 
+## Saved games
+
+Signed-in users can save the current game and load it later from the "Saved games" panel. The shell asks the game in its iframe for its state over postMessage and stores it through `/api/games`. Each game defines its own state format, which the API treats as opaque JSON. A new game must implement the bridge in `docs/save-bridge-protocol.md` to support saving.
+
 ## Not built yet
 
-The save bridge between the shell and each game, the sign-in and saved-games UI, and the tip button.
+The tip button.
