@@ -52,6 +52,10 @@ export class SetupDialog {
     if (!this.dialog.open) this.dialog.showModal();
   }
 
+  close(): void {
+    if (this.dialog.open) this.dialog.close();
+  }
+
   private submit(): void {
     this.dialog.close();
     this.onStart({ ...this.settings });

@@ -1,7 +1,7 @@
 import type { EngineClient } from '../engine/engineClient';
 import { type Color, KNIGHT, BISHOP, ROOK, QUEEN, WHITE, pieceColor } from '../engine/types';
 import { BoardView } from './boardView';
-import { GameController, type GameSnapshot } from './controller';
+import { GameController, type GameSnapshot, type SavedGame, type SavedGameSummary } from './controller';
 import { button, el } from './dom';
 import { describeResult } from './gameResult';
 import { computeMaterial } from './material';
@@ -79,6 +79,20 @@ export class App {
   /** Exposed for the dev-only debug hook. */
   get debugController(): GameController {
     return this.controller;
+  }
+
+  /** Save-bridge hook: the current game and its summary, or null on the setup screen. */
+  exportSave(): { state: SavedGame; summary: SavedGameSummary } | null {
+    const state = this.controller.exportSavedGame();
+    return state === null ? null : { state, summary: this.controller.summarizeSavedGame() };
+  }
+
+  /** Save-bridge hook: works from the setup screen or mid-game; throws on invalid state. */
+  importSave(state: unknown): void {
+    this.controller.importSavedGame(state);
+    this.flipped = false;
+    this.dismissedResult = null;
+    this.setup.close();
   }
 
   private storage(): Storage {

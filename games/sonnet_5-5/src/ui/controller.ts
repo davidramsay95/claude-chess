@@ -1,4 +1,4 @@
-import type { EngineResponse, Level } from '../engine/engineTypes';
+import { LEVELS, type EngineResponse, type Level } from '../engine/engineTypes';
 import { Game } from '../engine/game';
 import { START_FEN } from '../engine/position';
 import {
@@ -66,6 +66,21 @@ export interface GameSnapshot {
   announcement: string;
 }
 
+/** Everything needed to rebuild a game by replaying it; JSON-serialisable. */
+export interface SavedGame {
+  startFen: string;
+  playerColor: Color;
+  level: Level;
+  /** Half-moves in UCI coordinates, e.g. `e2e4`, `e7e8q`. */
+  moves: string[];
+  resigned: boolean;
+}
+
+export interface SavedGameSummary {
+  result: '1-0' | '0-1' | '1/2-1/2' | '*';
+  moveCount: number;
+}
+
 type Listener = (snapshot: GameSnapshot) => void;
 
 const sleep = (ms: number): Promise<void> => new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -118,6 +133,59 @@ export class GameController {
     this.pendingPromotion = null;
     this.animations = [];
     this.announce(`New game. You play ${config.playerColor === WHITE ? 'white' : 'black'}.`);
+    this.emit();
+    this.requestComputerMoveIfDue();
+  }
+
+  /** Returns null before the first game starts, so the setup screen has nothing to save. */
+  exportSavedGame(): SavedGame | null {
+    if (!this.active) return null;
+    return {
+      startFen: this.startFen,
+      playerColor: this.playerColor,
+      level: this.level,
+      moves: this.game.moveHistory.map(moveToUci),
+      resigned: this.result?.kind === 'resignation',
+    };
+  }
+
+  summarizeSavedGame(): SavedGameSummary {
+    const result = this.result;
+    const winner = result === null || result.kind === 'draw' ? null : result.winner;
+    const text = result?.kind === 'draw' ? '1/2-1/2' : winner === null ? '*' : winner === WHITE ? '1-0' : '0-1';
+    return { result: text, moveCount: this.game.moveHistory.length };
+  }
+
+  /** Replays `saved` into a fresh game. Throws before touching any state if it is invalid. */
+  importSavedGame(saved: unknown): void {
+    const record = typeof saved === 'object' && saved !== null ? (saved as Record<string, unknown>) : null; // shape is validated field by field below
+    if (record === null) throw new Error('Saved game must be an object.');
+    const { startFen, playerColor, level, moves, resigned } = record;
+    if (typeof startFen !== 'string') throw new Error('Saved game has no start position.');
+    if (playerColor !== WHITE && playerColor !== 1) throw new Error('Saved game has an invalid player colour.');
+    if (typeof level !== 'string' || !LEVELS.includes(level as Level)) throw new Error('Saved game has an invalid level.'); // includes() proves the value
+    if (!Array.isArray(moves) || !moves.every((m) => typeof m === 'string')) throw new Error('Saved game has an invalid move list.');
+    if (typeof resigned !== 'boolean') throw new Error('Saved game has an invalid resigned flag.');
+
+    const game = Game.fromFen(startFen);
+    (moves as string[]).forEach((uci, index) => { // every element checked to be a string above
+      const move = game.parseUci(uci);
+      if (move === undefined) throw new Error(`Illegal move ${uci} at ply ${index + 1}.`);
+      game.play(move);
+    });
+
+    this.cancelSearch();
+    this.game = game;
+    this.startFen = startFen;
+    this.playerColor = playerColor as Color; // narrowed to 0 or 1 above
+    this.level = level as Level; // validated against LEVELS above
+    this.active = true;
+    this.selected = null;
+    this.error = null;
+    this.result = resigned ? { kind: 'resignation', winner: (playerColor ^ 1) as Color } : resultFromStatus(game.status());
+    this.pendingPromotion = null;
+    this.animations = [];
+    this.announce('Game loaded.');
     this.emit();
     this.requestComputerMoveIfDue();
   }
