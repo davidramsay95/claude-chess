@@ -113,3 +113,29 @@ describe("mountAccountMenu when signed in", () => {
     expect(buttonLabelled("Sign in")).toBeTruthy();
   });
 });
+
+describe("mountAccountMenu session callback", () => {
+  it("reports the user after the session check and null after sign-out", async () => {
+    const onSessionChange = vi.fn();
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(signedInSession))
+      .mockResolvedValueOnce(jsonResponse({ success: true }));
+    mountAccountMenu(container, { fetcher, navigate: vi.fn(), onSessionChange });
+    await flush();
+    expect(onSessionChange).toHaveBeenLastCalledWith({ id: "u1", name: "Ada Lovelace", email: "ada@example.com" });
+
+    buttonLabelled("Sign out").click();
+    await flush();
+    expect(onSessionChange).toHaveBeenLastCalledWith(null);
+  });
+
+  it("reports null when the session check fails or nobody is signed in", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const onSessionChange = vi.fn();
+    mountAccountMenu(container, { fetcher: vi.fn().mockRejectedValue(new Error("down")), onSessionChange });
+    await flush();
+    expect(onSessionChange).toHaveBeenCalledExactlyOnceWith(null);
+    consoleError.mockRestore();
+  });
+});

@@ -2,9 +2,11 @@ export interface AccountMenuOptions {
   fetcher?: typeof fetch;
   /** Performs the full-page redirect to the sign-in provider. */
   navigate?: (url: string) => void;
+  /** Called with the signed-in user, or null, whenever the session state is established or changes. */
+  onSessionChange?: (user: SessionUser | null) => void;
 }
 
-interface SessionUser {
+export interface SessionUser {
   name: string;
 }
 
@@ -26,20 +28,29 @@ const button = (label: string, onClick: () => void): HTMLButtonElement => {
 /** Renders sign-in or the signed-in user into the container, backed by the Better Auth endpoints. */
 export const mountAccountMenu = (
   container: HTMLElement,
-  { fetcher = fetch.bind(globalThis), navigate = (url) => window.location.assign(url) }: AccountMenuOptions = {},
+  {
+    fetcher = fetch.bind(globalThis),
+    navigate = (url) => window.location.assign(url),
+    onSessionChange = () => undefined,
+  }: AccountMenuOptions = {},
 ): void => {
   let user: SessionUser | null = null;
   let pickerOpen = false;
   let errorMessage: string | null = null;
 
+  const setUser = (next: SessionUser | null): void => {
+    user = next;
+    onSessionChange(next);
+  };
+
   const loadSession = async (): Promise<void> => {
     try {
       const response = await fetcher("/api/auth/get-session", { credentials: "same-origin" });
       const session = (await response.json()) as { user: SessionUser } | null;
-      user = session?.user ?? null;
+      setUser(session?.user ?? null);
     } catch (error) {
       console.error("Could not check the sign-in session", error);
-      user = null;
+      setUser(null);
     }
     render();
   };
@@ -76,7 +87,7 @@ export const mountAccountMenu = (
       if (!response.ok) {
         throw new Error(`Sign-out responded with ${response.status}`);
       }
-      user = null;
+      setUser(null);
       pickerOpen = false;
     } catch (error) {
       console.error("Could not sign out", error);

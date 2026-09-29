@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mountShell, resolveSelectedSlug, type GameSummary } from "./shell.ts";
 
 const games: GameSummary[] = [
@@ -56,5 +56,55 @@ describe("mountShell", () => {
     const root = document.getElementById("root") as HTMLElement; // Created in beforeEach, always present.
     mountShell(root, []);
     expect(root.textContent).toContain("No games");
+  });
+
+  it("returns a handle exposing the frame, games and current slug", () => {
+    const root = document.getElementById("root") as HTMLElement; // Created in beforeEach, always present.
+    const handle = mountShell(root, games);
+    expect(handle?.frame).toBe(root.querySelector("iframe"));
+    expect(handle?.games).toEqual(games);
+    expect(handle?.getSelectedSlug()).toBe("fable_5-1");
+    root.querySelectorAll<HTMLButtonElement>('[role="tab"]')[1].click();
+    expect(handle?.getSelectedSlug()).toBe("opus_5-5");
+  });
+
+  it("returns null when there are no games", () => {
+    const root = document.getElementById("root") as HTMLElement; // Created in beforeEach, always present.
+    expect(mountShell(root, [])).toBeNull();
+  });
+
+  it("notifies subscribers when the selection changes and stops after unsubscribe", () => {
+    const root = document.getElementById("root") as HTMLElement; // Created in beforeEach, always present.
+    const handle = mountShell(root, games);
+    const listener = vi.fn();
+    const unsubscribe = handle?.onSelectionChange(listener);
+
+    root.querySelectorAll<HTMLButtonElement>('[role="tab"]')[1].click();
+    expect(listener).toHaveBeenCalledWith("opus_5-5");
+
+    window.location.hash = "fable_5-1";
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    expect(listener).toHaveBeenLastCalledWith("fable_5-1");
+
+    unsubscribe?.();
+    listener.mockClear();
+    root.querySelectorAll<HTMLButtonElement>('[role="tab"]')[1].click();
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it("does not notify when the selection is unchanged", () => {
+    const root = document.getElementById("root") as HTMLElement; // Created in beforeEach, always present.
+    const handle = mountShell(root, games);
+    const listener = vi.fn();
+    handle?.onSelectionChange(listener);
+    root.querySelectorAll<HTMLButtonElement>('[role="tab"]')[0].click();
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it("provides a slot for the saved games panel before the account slot", () => {
+    const root = mount();
+    const slots = [...root.querySelectorAll("header > div")].map((element) => element.className);
+    expect(slots.indexOf("saved-games")).toBeGreaterThan(-1);
+    expect(slots.indexOf("saved-games")).toBeLessThan(slots.indexOf("account"));
   });
 });

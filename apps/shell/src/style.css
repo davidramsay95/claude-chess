@@ -105,3 +105,105 @@ body {
 }
 
 .account-picker .account-error { position: static; margin-top: 0.25rem; }
+
+.saved-games {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+/* The saved games slot takes the auto margin, so the account menu sits right beside it. */
+.saved-games + .account { margin-left: 0; }
+
+.saved-hint { color: var(--muted); font-size: 0.85rem; }
+
+.saved-games button,
+.saved-games input {
+  font: inherit;
+  color: var(--text);
+}
+
+.saved-games button {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.saved-games button:hover:not(:disabled) { border-color: var(--accent); }
+.saved-games button:disabled { color: var(--muted); cursor: default; }
+.saved-games button:focus-visible,
+.saved-games input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.saved-panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: min(26rem, calc(100vw - 2rem));
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--surface);
+}
+
+.saved-form { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.saved-form label { color: var(--muted); font-size: 0.85rem; }
+
+.saved-form input {
+  flex: 1;
+  min-width: 8rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--bg);
+}
+
+.saved-message {
+  margin: 0;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.saved-message-error { background: #4a1f1f; color: #ffd9d9; }
+.saved-message-success { color: var(--accent); }
+
+.saved-empty { margin: 0; color: var(--muted); font-size: 0.85rem; }
+
+.saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.saved-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+.saved-item-text { display: flex; flex-direction: column; min-width: 0; }
+.saved-title { overflow-wrap: anywhere; }
+.saved-meta { color: var(--muted); font-size: 0.8rem; }
+.saved-item-actions { display: flex; align-items: center; gap: 0.4rem; }
+.saved-item-actions button { padding: 0.25rem 0.7rem; font-size: 0.85rem; }
+.saved-confirm-text { color: var(--muted); font-size: 0.85rem; }

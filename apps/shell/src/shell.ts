@@ -10,10 +10,19 @@ export const resolveSelectedSlug = (hash: string, games: readonly GameSummary[])
   return match?.slug ?? games[0]?.slug ?? null;
 };
 
+/** What other modules need from the mounted shell: the frame, the games and selection changes. */
+export interface ShellHandle {
+  frame: HTMLIFrameElement;
+  games: readonly GameSummary[];
+  getSelectedSlug: () => string;
+  /** Subscribes to selection changes; returns the unsubscribe function. */
+  onSelectionChange: (listener: (slug: string) => void) => () => void;
+}
+
 const gameUrl = (slug: string): string => `/play/${slug}/`;
 
-/** Renders the game switcher and the frame that hosts the selected game. */
-export const mountShell = (root: HTMLElement, games: readonly GameSummary[]): void => {
+/** Renders the game switcher and the frame that hosts the selected game. Returns null when there are no games. */
+export const mountShell = (root: HTMLElement, games: readonly GameSummary[]): ShellHandle | null => {
   root.replaceChildren();
 
   if (games.length === 0) {
@@ -21,7 +30,7 @@ export const mountShell = (root: HTMLElement, games: readonly GameSummary[]): vo
     empty.className = "empty";
     empty.textContent = "No games are available yet.";
     root.append(empty);
-    return;
+    return null;
   }
 
   const header = document.createElement("header");
@@ -33,7 +42,9 @@ export const mountShell = (root: HTMLElement, games: readonly GameSummary[]): vo
   tabList.setAttribute("aria-label", "Choose a model to play against");
   const accountSlot = document.createElement("div");
   accountSlot.className = "account";
-  header.append(title, tabList, accountSlot);
+  const savedGamesSlot = document.createElement("div");
+  savedGamesSlot.className = "saved-games";
+  header.append(title, tabList, savedGamesSlot, accountSlot);
 
   const frame = document.createElement("iframe");
   frame.className = "game";
@@ -41,6 +52,9 @@ export const mountShell = (root: HTMLElement, games: readonly GameSummary[]): vo
   frame.setAttribute("allow", "clipboard-write");
 
   const tabs = new Map<string, HTMLButtonElement>();
+
+  const listeners = new Set<(slug: string) => void>();
+  let selectedSlug = games[0].slug;
 
   const select = (slug: string): void => {
     for (const [tabSlug, tab] of tabs) {
@@ -50,6 +64,12 @@ export const mountShell = (root: HTMLElement, games: readonly GameSummary[]): vo
     const nextUrl = gameUrl(slug);
     if (frame.getAttribute("src") !== nextUrl) {
       frame.setAttribute("src", nextUrl);
+    }
+    if (slug !== selectedSlug) {
+      selectedSlug = slug;
+      for (const listener of listeners) {
+        listener(slug);
+      }
     }
   };
 
@@ -76,4 +96,16 @@ export const mountShell = (root: HTMLElement, games: readonly GameSummary[]): vo
   };
   window.addEventListener("hashchange", selectFromHash);
   selectFromHash();
+
+  return {
+    frame,
+    games,
+    getSelectedSlug: () => selectedSlug,
+    onSelectionChange: (listener) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+  };
 };
