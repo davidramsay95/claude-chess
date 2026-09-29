@@ -6,6 +6,7 @@ Hosts the chess games written by each model in `games/` behind one switcher, ser
 
 - `games/<model>_<version>-<subversion>/` one self-contained game per model. Drop in a new folder with the same naming format and it appears in the switcher on the next build. Each must be a Vite or Next.js project.
 - `apps/shell/` the switcher page that loads the selected game in a frame at `/play/<slug>/`.
+- `worker/` the API: Better Auth sign-in, the D1-backed games API, and D1 migrations in `worker/migrations/`.
 - `scripts/` discovers games, builds each under its own sub-path, and writes `dist/games.json`.
 
 ## Commands
@@ -13,14 +14,21 @@ Hosts the chess games written by each model in `games/` behind one switcher, ser
 ```sh
 npm install
 npm --prefix apps/shell install
+npm --prefix worker install
 npm run build:games -- --skip-install   # local: reuse installed game dependencies
 npm run build                           # games, then shell, into dist/
 npm run dev                             # serve dist/ locally through wrangler
-npm test                                # scripts tests; shell tests: npm --prefix apps/shell test
+npm test                                # scripts tests
+npm --prefix apps/shell test            # shell tests
+npm --prefix worker test                # API tests, run in the Workers runtime
 ```
 
 Cloudflare Workers Builds should use `npm ci && npm run build:ci` as the build command and `npx wrangler deploy` as the deploy command.
 
+## Local API setup
+
+Create `.dev.vars` (gitignored) with `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL=http://localhost:8787`, then apply migrations with `npx wrangler d1 migrations apply claude-chess --local`. Google and GitHub sign-in need `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`; a provider is enabled only when both of its values are set.
+
 ## Not built yet
 
-Login, saved games, and the tip button are planned and not implemented.
+The save bridge between the shell and each game, the sign-in and saved-games UI, and the tip button.
