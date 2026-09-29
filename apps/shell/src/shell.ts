@@ -31,7 +31,9 @@ export const mountShell = (root: HTMLElement, games: readonly GameSummary[]): vo
   const tabList = document.createElement("div");
   tabList.setAttribute("role", "tablist");
   tabList.setAttribute("aria-label", "Choose a model to play against");
-  header.append(title, tabList);
+  const accountSlot = document.createElement("div");
+  accountSlot.className = "account";
+  header.append(title, tabList, accountSlot);
 
   const frame = document.createElement("iframe");
   frame.className = "game";

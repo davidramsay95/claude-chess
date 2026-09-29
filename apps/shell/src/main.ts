@@ -1,4 +1,5 @@
 import "./style.css";
+import { mountAccountMenu } from "./account.ts";
 import { mountShell, type GameSummary } from "./shell.ts";
 
 const loadGames = async (): Promise<GameSummary[]> => {
@@ -14,3 +15,8 @@ if (root === null) {
   throw new Error("Missing #root element");
 }
 mountShell(root, await loadGames());
+
+const accountSlot = root.querySelector<HTMLElement>(".account");
+if (accountSlot !== null) {
+  mountAccountMenu(accountSlot);
+}
