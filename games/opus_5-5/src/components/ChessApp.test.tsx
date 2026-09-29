@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent, { type UserEvent } from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { EngineClient } from "@/engine/engineClient";
 import type { MoveRequest } from "@/engine/protocol";
 import { ChessApp } from "./ChessApp";
@@ -315,5 +315,60 @@ describe("side panel", () => {
     unmount();
 
     expect(engine.terminate).toHaveBeenCalled();
+  });
+});
+
+describe("save bridge", () => {
+  const shell = { postMessage: vi.fn() };
+  const originalParent = Object.getOwnPropertyDescriptor(window, "parent");
+
+  const sendToGame = async (message: object): Promise<void> => {
+    const event = new MessageEvent("message", { data: { source: "claude-chess-shell", ...message }, origin: window.location.origin });
+    // jsdom only accepts real windows as a MessageEvent source, so the fake shell is attached afterwards.
+    Object.defineProperty(event, "source", { value: shell });
+    await act(async () => {
+      window.dispatchEvent(event);
+    });
+  };
+  const lastReply = (): Record<string, unknown> => shell.postMessage.mock.lastCall?.[0] as Record<string, unknown>; // test-only narrowing of a mock call
+
+  beforeEach(() => {
+    shell.postMessage.mockClear();
+    Object.defineProperty(window, "parent", { value: shell, configurable: true });
+  });
+  afterEach(() => {
+    if (originalParent) Object.defineProperty(window, "parent", originalParent);
+  });
+
+  it("announces ready on load and reports no state on the setup screen", async () => {
+    render(<ChessApp createEngine={silentEngine().createEngine} />);
+    expect(shell.postMessage).toHaveBeenCalledWith({ source: "claude-chess-game", type: "ready" }, window.location.origin);
+    await sendToGame({ type: "request-state", requestId: "a" });
+    expect(lastReply()).toMatchObject({ type: "state", requestId: "a", state: null, summary: null });
+  });
+
+  it("loads a saved game from the setup screen and reports it back", async () => {
+    render(<ChessApp createEngine={silentEngine().createEngine} />);
+    const state = { humanColor: "b", difficulty: "hard", moves: ["e2e4"], resigned: false };
+    await sendToGame({ type: "load-state", requestId: "b", state });
+    expect(lastReply()).toMatchObject({ type: "loaded", requestId: "b", ok: true });
+    expect(screen.getByText("e4")).toBeInTheDocument();
+    await sendToGame({ type: "request-state", requestId: "c" });
+    expect(lastReply()).toMatchObject({ state, summary: { result: "*", moveCount: 1 } });
+  });
+
+  it("replaces a game in progress and keeps it when the load is invalid", async () => {
+    const user = userEvent.setup();
+    render(<ChessApp createEngine={silentEngine().createEngine} />);
+    await startGame(user, "White");
+    await user.click(square("e2"));
+    await user.click(square("e4"));
+    await sendToGame({ type: "load-state", requestId: "d", state: { humanColor: "w", difficulty: "easy", moves: ["e2e5"], resigned: false } });
+    expect(lastReply()).toMatchObject({ type: "loaded", requestId: "d", ok: false });
+    expect(screen.getByText("e4")).toBeInTheDocument();
+    await sendToGame({ type: "load-state", requestId: "e", state: { humanColor: "w", difficulty: "easy", moves: ["d2d4"], resigned: false } });
+    expect(lastReply()).toMatchObject({ ok: true });
+    expect(screen.getByText("d4")).toBeInTheDocument();
+    expect(screen.queryByText("e4")).not.toBeInTheDocument();
   });
 });

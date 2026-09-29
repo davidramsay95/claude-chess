@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { SavedGame } from "@/bridge/savedGame";
 import { ChessGame, type PromotionSymbol, type Side } from "@/chess/game";
 import type { EngineClient } from "@/engine/engineClient";
 import type { Difficulty } from "@/engine/protocol";
@@ -23,6 +24,10 @@ interface GameViewProps {
   settings: GameSettings;
   createEngine: () => EngineClient;
   onNewGame: () => void;
+  /** A game to resume instead of starting from the initial position. */
+  initial?: SavedGame;
+  /** Reports the savable game after every change to its moves or resignation. */
+  onProgress: (saved: SavedGame) => void;
 }
 
 /** Rebuilds the game from its move list, which is the single source of truth for React state. */
@@ -50,15 +55,19 @@ const statusText = (outcome: string | null, humansTurn: boolean, inCheck: boolea
 };
 
 /** One game against the engine: board, side panel and the flow of turns between human and engine. */
-export const GameView = ({ settings, createEngine, onNewGame }: GameViewProps): React.JSX.Element => {
+export const GameView = ({ settings, createEngine, onNewGame, initial, onProgress }: GameViewProps): React.JSX.Element => {
   const { humanColor, difficulty } = settings;
-  const [moves, setMoves] = useState<readonly string[]>([]);
+  const [moves, setMoves] = useState<readonly string[]>(initial?.moves ?? []);
   const [selected, setSelected] = useState<string | null>(null);
   const [promotion, setPromotion] = useState<MoveSquares | null>(null);
   const [orientation, setOrientation] = useState<Side>(humanColor);
-  const [resigned, setResigned] = useState(false);
+  const [resigned, setResigned] = useState(initial?.resigned ?? false);
   const [reviewing, setReviewing] = useState(false);
   const getEngine = useEngine(createEngine);
+
+  useEffect(() => {
+    onProgress({ humanColor, difficulty, moves, resigned });
+  }, [onProgress, humanColor, difficulty, moves, resigned]);
 
   const game = useMemo(() => replay(moves), [moves]);
   const pieces = useMemo(() => game.pieces(), [game]);
