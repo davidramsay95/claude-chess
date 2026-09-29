@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <title>Fable Chess</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231d2430'/%3E%3Cpath d='M32 5 L32 15 M27 10 L37 10' stroke='%23f4ecd9' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M19 32 C19 20 45 20 45 32 L43 47 L21 47 Z' fill='%23f4ecd9'/%3E%3Cpath d='M15 57 L49 57 L47 50 L17 50 Z' fill='%23f4ecd9'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <section id="setup" class="setup" hidden>
+        <div class="setup-card">
+          <h1 class="setup-title">Fable Chess</h1>
+          <p class="setup-subtitle">Play against a hand-written engine. Choose your side and how hard it should fight.</p>
+
+          <fieldset class="choice-group">
+            <legend>Play as</legend>
+            <div class="choice-row" data-role="color-choices">
+              <label class="choice">
+                <input type="radio" name="color" value="white" checked />
+                <span class="choice-body"><span class="choice-icon" data-piece="white-king"></span><span>White</span></span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="color" value="black" />
+                <span class="choice-body"><span class="choice-icon" data-piece="black-king"></span><span>Black</span></span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="choice-group">
+            <legend>Difficulty</legend>
+            <div class="choice-column">
+              <label class="choice">
+                <input type="radio" name="difficulty" value="easy" />
+                <span class="choice-body"><strong>Easy</strong><small>Looks one move ahead and makes deliberate slips.</small></span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="difficulty" value="medium" checked />
+                <span class="choice-body"><strong>Medium</strong><small>Sees a couple of moves ahead and grabs loose pieces.</small></span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="difficulty" value="hard" />
+                <span class="choice-body"><strong>Hard</strong><small>Searches several moves deep with a full evaluation.</small></span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="difficulty" value="expert" />
+                <span class="choice-body"><strong>Expert</strong><small>Thinks for a few seconds and punishes mistakes.</small></span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="setup-actions">
+            <button type="button" class="button primary" data-action="start">Start game</button>
+            <button type="button" class="button" data-action="import">Import game</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="game" class="game" hidden>
+        <div class="board-column">
+          <div class="board-wrap">
+            <div id="board" role="grid" aria-label="Chess board"></div>
+            <div id="promotion" class="promotion" hidden></div>
+            <div id="thinking" class="thinking" hidden><span class="spinner"></span><span>Thinking</span></div>
+          </div>
+        </div>
+
+        <aside class="panel">
+          <div class="panel-header">
+            <div id="status" class="status" role="status" aria-live="polite"></div>
+            <div id="meta" class="meta"></div>
+          </div>
+
+          <div class="controls">
+            <button type="button" class="button" data-action="new">New game</button>
+            <button type="button" class="button" data-action="resign">Resign</button>
+            <button type="button" class="button" data-action="takeback">Take back</button>
+            <button type="button" class="button" data-action="flip">Flip</button>
+            <button type="button" class="button" data-action="sound" aria-pressed="true">Sound on</button>
+            <button type="button" class="button" data-action="export">Export</button>
+            <button type="button" class="button" data-action="import">Import</button>
+          </div>
+
+          <div id="resign-confirm" class="confirm" hidden>
+            <span>Resign this game?</span>
+            <button type="button" class="button danger" data-action="resign-yes">Yes, resign</button>
+            <button type="button" class="button" data-action="resign-no">Keep playing</button>
+          </div>
+
+          <div class="nav">
+            <button type="button" class="button icon" data-action="first" aria-label="First position">|&lt;</button>
+            <button type="button" class="button icon" data-action="prev" aria-label="Previous move">&lt;</button>
+            <button type="button" class="button icon" data-action="next" aria-label="Next move">&gt;</button>
+            <button type="button" class="button icon" data-action="last" aria-label="Last move">&gt;|</button>
+            <button type="button" class="button" data-action="live" hidden>Back to game</button>
+          </div>
+
+          <div id="moves" class="move-list" aria-label="Move list"></div>
+        </aside>
+      </section>
+
+      <dialog id="export-dialog" class="dialog">
+        <h2>Export game</h2>
+        <p>Download the saved game as a file or copy it to paste elsewhere.</p>
+        <textarea readonly rows="8" spellcheck="false" aria-label="Saved game JSON"></textarea>
+        <p class="dialog-message" data-role="message"></p>
+        <div class="dialog-actions">
+          <button type="button" class="button primary" data-action="download">Download .json</button>
+          <button type="button" class="button" data-action="copy">Copy to clipboard</button>
+          <button type="button" class="button" data-action="close">Close</button>
+        </div>
+      </dialog>
+
+      <dialog id="import-dialog" class="dialog">
+        <h2>Import game</h2>
+        <p>Choose a saved game file or paste its contents below.</p>
+        <label class="file-label">
+          <span>Choose file</span>
+          <input type="file" accept="application/json,.json" />
+        </label>
+        <textarea rows="8" spellcheck="false" placeholder='{"version":1, "startFen": "...", "moves": ["e2e4", ...]}' aria-label="Saved game JSON"></textarea>
+        <p class="dialog-message" data-role="message"></p>
+        <div class="dialog-actions">
+          <button type="button" class="button primary" data-action="load">Load game</button>
+          <button type="button" class="button" data-action="close">Cancel</button>
+        </div>
+      </dialog>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
