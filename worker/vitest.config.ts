@@ -8,7 +8,7 @@ export default defineConfig(async () => {
       cloudflareTest({
         wrangler: { configPath: "../wrangler.jsonc" },
         miniflare: {
-          bindings: { TEST_MIGRATIONS: migrations, BETTER_AUTH_SECRET: "test-secret-that-is-at-least-32-characters-long" },
+          bindings: { TEST_MIGRATIONS: migrations, BETTER_AUTH_SECRET: "test-secret-that-is-at-least-32-characters-long", BETTER_AUTH_URL: "https://chess.test" },
         },
       }),
     ],
