@@ -1,21 +1,8 @@
 import type { CSSProperties } from "react";
 import type { PieceSymbol, Side } from "@/chess/game";
 
-// Written out in full so Tailwind can find every class when it scans the source.
-const PIECE_IMAGES: Record<`${Side}${PieceSymbol}`, string> = {
-  wp: "bg-[url(/pieces/wp.svg)]",
-  wn: "bg-[url(/pieces/wn.svg)]",
-  wb: "bg-[url(/pieces/wb.svg)]",
-  wr: "bg-[url(/pieces/wr.svg)]",
-  wq: "bg-[url(/pieces/wq.svg)]",
-  wk: "bg-[url(/pieces/wk.svg)]",
-  bp: "bg-[url(/pieces/bp.svg)]",
-  bn: "bg-[url(/pieces/bn.svg)]",
-  bb: "bg-[url(/pieces/bb.svg)]",
-  br: "bg-[url(/pieces/br.svg)]",
-  bq: "bg-[url(/pieces/bq.svg)]",
-  bk: "bg-[url(/pieces/bk.svg)]",
-};
+// Inlined at build time so the artwork resolves when the game is served under a sub-path.
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 export const PIECE_NAMES: Record<PieceSymbol, string> = {
   p: "pawn",
@@ -40,7 +27,7 @@ export const PieceGlyph = ({ color, type, className = "", style }: PieceGlyphPro
   <span
     aria-hidden
     data-piece
-    style={style}
-    className={`block bg-contain bg-center bg-no-repeat ${PIECE_IMAGES[`${color}${type}`]} ${className}`}
+    style={{ backgroundImage: `url(${BASE_PATH}/pieces/${color}${type}.svg)`, ...style }}
+    className={`block bg-contain bg-center bg-no-repeat ${className}`}
   />
 );
