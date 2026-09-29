@@ -21,6 +21,7 @@ body {
 #root { display: flex; flex-direction: column; }
 
 .bar {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 1.5rem;
@@ -207,3 +208,15 @@ body {
 .saved-item-actions { display: flex; align-items: center; gap: 0.4rem; }
 .saved-item-actions button { padding: 0.25rem 0.7rem; font-size: 0.85rem; }
 .saved-confirm-text { color: var(--muted); font-size: 0.85rem; }
+
+/* Phones: put the model tabs on their own row, and let the saved games panel span the header. */
+@media (max-width: 640px) {
+  .bar { flex-wrap: wrap; gap: 0.5rem 0.75rem; padding: 0.5rem 0.75rem; }
+  .bar h1 { font-size: 0.95rem; }
+  [role="tablist"] { order: 3; flex: 1 0 100%; padding-bottom: 0.1rem; }
+  .saved-hint, .account-name { display: none; }
+  [role="tab"] { padding: 0.35rem 0.7rem; font-size: 0.9rem; }
+  .account button, .saved-games > button { padding: 0.35rem 0.7rem; font-size: 0.9rem; }
+  .saved-games { position: static; }
+  .saved-panel { left: 0.75rem; right: 0.75rem; width: auto; top: calc(100% + 0.25rem); }
+}
