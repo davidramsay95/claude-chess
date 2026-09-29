@@ -1,0 +1,62 @@
+[
+  {
+    "note": "Game loads inside the shell iframe and announces itself.",
+    "direction": "game to shell",
+    "message": { "source": "claude-chess-game", "type": "ready" }
+  },
+  {
+    "note": "Shell asks for the current game because the user clicked Save game.",
+    "direction": "shell to game",
+    "message": { "source": "claude-chess-shell", "type": "request-state", "requestId": "3f0c1d2e-0000-4000-8000-000000000001" }
+  },
+  {
+    "note": "Game replies with its export (see game-state.example.json) and a summary. Fool's mate: black won, four half-moves.",
+    "direction": "game to shell",
+    "message": {
+      "source": "claude-chess-game",
+      "type": "state",
+      "requestId": "3f0c1d2e-0000-4000-8000-000000000001",
+      "state": {
+        "version": 1,
+        "startFen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "playerColor": "white",
+        "difficulty": "medium",
+        "moves": ["f2f3", "e7e5", "g2g4", "d8h4"],
+        "resigned": false
+      },
+      "summary": { "result": "0-1", "moveCount": 4 }
+    }
+  },
+  {
+    "note": "Before any game has started (setup screen) the game must reply with nulls, not an error.",
+    "direction": "game to shell",
+    "message": { "source": "claude-chess-game", "type": "state", "requestId": "3f0c1d2e-0000-4000-8000-000000000002", "state": null, "summary": null }
+  },
+  {
+    "note": "Later the user clicks Load on a saved game. The shell sends the stored state back unchanged.",
+    "direction": "shell to game",
+    "message": {
+      "source": "claude-chess-shell",
+      "type": "load-state",
+      "requestId": "3f0c1d2e-0000-4000-8000-000000000003",
+      "state": {
+        "version": 1,
+        "startFen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        "playerColor": "white",
+        "difficulty": "medium",
+        "moves": ["f2f3", "e7e5", "g2g4", "d8h4"],
+        "resigned": false
+      }
+    }
+  },
+  {
+    "note": "Success. The game replays the moves and shows the position.",
+    "direction": "game to shell",
+    "message": { "source": "claude-chess-game", "type": "loaded", "requestId": "3f0c1d2e-0000-4000-8000-000000000003", "ok": true }
+  },
+  {
+    "note": "Failure. The state was invalid (for example an illegal move). The game must be left exactly as it was.",
+    "direction": "game to shell",
+    "message": { "source": "claude-chess-game", "type": "loaded", "requestId": "3f0c1d2e-0000-4000-8000-000000000004", "ok": false, "error": "Move 3 (g2g5) is not legal" }
+  }
+]
