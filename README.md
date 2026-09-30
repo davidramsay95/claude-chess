@@ -5,7 +5,7 @@ Hosts the chess games written by each model in `games/` behind one switcher, ser
 ## Layout
 
 - `games/<model>_<version>-<subversion>/` one self-contained game per model. Drop in a new folder named `model_version-subversion` or `model_version-subversion_YYYYMMDD` and it appears in the switcher on the next build. The date suffix lets several runs of one model version coexist. `PROMPT.md` is the brief to give a model that is creating a new game. Each must be a Vite or Next.js project.
-- `apps/shell/` the switcher page that loads the selected game in a frame at `/play/<slug>/`.
+- `apps/shell/` the site pages. `index.html` is the home page at `/`, `games.html` is the game page at `/games` with the model selector, which loads the selected game in a frame at `/play/<slug>/`.
 - `worker/` the API: Better Auth sign-in, the D1-backed games API, and D1 migrations in `worker/migrations/`.
 - `apps/shell/terms-of-service.html` and `apps/shell/privacy-policy.html` the legal pages, built as extra Vite entries and served at `/terms-of-service` and `/privacy-policy`. Update them when the data the app collects changes.
 - `docs/save-bridge-protocol.md` the postMessage contract between the shell and each game, used to save and load games.

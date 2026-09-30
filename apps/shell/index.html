@@ -4,10 +4,51 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark" />
+    <meta
+      name="description"
+      content="Play chess against computer opponents that AI models wrote for themselves, from the board and rules to the engine."
+    />
     <title>Claude Chess</title>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <header class="site-bar">
+      <a class="brand" href="/">Claude Chess</a>
+      <a class="bar-link" href="/games">Play</a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <h1>Every AI built its own chess game. Can you beat them?</h1>
+          <p>
+            Each game here, from the board and the rules to the computer opponent, was written by a different Claude
+            model from the same brief. Pick one, make your move and see how differently they play.
+          </p>
+          <a class="cta" href="/games">Play now</a>
+        </div>
+        <div id="board" class="board"></div>
+      </section>
+
+      <section class="section" aria-labelledby="challengers-heading">
+        <h2 id="challengers-heading">The challengers</h2>
+        <p>Every model has its own engine and its own idea of a good move. Choose who to face.</p>
+        <ul id="challengers" class="challengers"></ul>
+      </section>
+
+      <section class="section" aria-labelledby="save-heading">
+        <h2 id="save-heading">Pick a game back up later</h2>
+        <p>
+          Sign in with Google or GitHub to save a game in progress and load it whenever you like. You can also play
+          without an account.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a href="/terms-of-service">Terms of Service</a>
+      <a href="/privacy-policy">Privacy Policy</a>
+    </footer>
+
+    <script type="module" src="/src/homeMain.ts"></script>
   </body>
 </html>
