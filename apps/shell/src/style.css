@@ -31,23 +31,77 @@ body {
 }
 
 .bar h1 { margin: 0; font-size: 1rem; letter-spacing: 0.04em; }
+.bar h1 a { color: inherit; text-decoration: none; }
+.bar h1 a:hover { color: var(--accent); }
+.bar h1 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-[role="tablist"] { display: flex; gap: 0.25rem; overflow-x: auto; }
+.model-select { position: relative; }
 
-[role="tab"] {
+.model-select-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   padding: 0.4rem 0.9rem;
-  border: 1px solid transparent;
+  border: 1px solid var(--accent);
   border-radius: 999px;
   background: transparent;
-  color: var(--muted);
+  color: var(--text);
   font: inherit;
   cursor: pointer;
   white-space: nowrap;
 }
 
-[role="tab"]:hover { color: var(--text); }
-[role="tab"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-[role="tab"][aria-selected="true"] { color: var(--bg); background: var(--accent); }
+.model-select-trigger:focus-visible,
+.model-select-option:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.model-select-chevron {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+  transform: translateY(-0.1rem) rotate(45deg);
+  transition: transform 0.15s;
+}
+
+.model-select.open .model-select-chevron { transform: translateY(0.1rem) rotate(-135deg); }
+
+/* No gap between trigger and list, so the pointer never leaves the selector while moving to an option. */
+.model-select-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  min-width: 100%;
+  margin: 0;
+  padding: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  list-style: none;
+}
+
+.model-select-list[hidden] { display: none; }
+
+.model-select-option {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  width: 100%;
+  padding: 0.4rem 0.75rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.model-select-option:hover { background: var(--bg); }
+.model-select-option[aria-current="true"] { color: var(--accent); }
+.model-select-date { color: var(--muted); font-size: 0.8rem; }
 
 .game { flex: 1; width: 100%; border: 0; background: var(--bg); }
 
@@ -209,13 +263,12 @@ body {
 .saved-item-actions button { padding: 0.25rem 0.7rem; font-size: 0.85rem; }
 .saved-confirm-text { color: var(--muted); font-size: 0.85rem; }
 
-/* Phones: put the model tabs on their own row, and let the saved games panel span the header. */
+/* Phones: let the saved games panel span the header. */
 @media (max-width: 640px) {
   .bar { flex-wrap: wrap; gap: 0.5rem 0.75rem; padding: 0.5rem 0.75rem; }
   .bar h1 { font-size: 0.95rem; }
-  [role="tablist"] { order: 3; flex: 1 0 100%; padding-bottom: 0.1rem; }
   .saved-hint, .account-name { display: none; }
-  [role="tab"] { padding: 0.35rem 0.7rem; font-size: 0.9rem; }
+  .model-select-trigger { padding: 0.35rem 0.7rem; font-size: 0.9rem; }
   .account button, .saved-games > button { padding: 0.35rem 0.7rem; font-size: 0.9rem; }
   .saved-games { position: static; }
   .saved-panel { left: 0.75rem; right: 0.75rem; width: auto; top: calc(100% + 0.25rem); }

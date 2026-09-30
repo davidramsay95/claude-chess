@@ -1,7 +1,5 @@
-export interface GameSummary {
-  slug: string;
-  label: string;
-}
+import type { GameSummary } from "./gameSummary.ts";
+import { mountModelSelector } from "./modelSelector.ts";
 
 /** Picks the game named in the URL hash, defaulting to the first game. */
 export const resolveSelectedSlug = (hash: string, games: readonly GameSummary[]): string | null => {
@@ -36,31 +34,35 @@ export const mountShell = (root: HTMLElement, games: readonly GameSummary[]): Sh
   const header = document.createElement("header");
   header.className = "bar";
   const title = document.createElement("h1");
-  title.textContent = "Claude Chess";
-  const tabList = document.createElement("div");
-  tabList.setAttribute("role", "tablist");
-  tabList.setAttribute("aria-label", "Choose a model to play against");
+  const homeLink = document.createElement("a");
+  homeLink.href = "/";
+  homeLink.textContent = "Claude Chess";
+  title.append(homeLink);
+  // select is defined below; the callback only runs after mounting, so the reference is safe.
+  const modelSelector = mountModelSelector({
+    games,
+    selectedSlug: games[0].slug,
+    onSelect: (slug) => {
+      window.location.hash = slug;
+      select(slug);
+    },
+  });
   const accountSlot = document.createElement("div");
   accountSlot.className = "account";
   const savedGamesSlot = document.createElement("div");
   savedGamesSlot.className = "saved-games";
-  header.append(title, tabList, savedGamesSlot, accountSlot);
+  header.append(title, modelSelector.element, savedGamesSlot, accountSlot);
 
   const frame = document.createElement("iframe");
   frame.className = "game";
   frame.title = "Chess game";
   frame.setAttribute("allow", "clipboard-write");
 
-  const tabs = new Map<string, HTMLButtonElement>();
-
   const listeners = new Set<(slug: string) => void>();
   let selectedSlug = games[0].slug;
 
   const select = (slug: string): void => {
-    for (const [tabSlug, tab] of tabs) {
-      tab.setAttribute("aria-selected", String(tabSlug === slug));
-      tab.tabIndex = tabSlug === slug ? 0 : -1;
-    }
+    modelSelector.setSelected(slug);
     const nextUrl = gameUrl(slug);
     if (frame.getAttribute("src") !== nextUrl) {
       frame.setAttribute("src", nextUrl);
@@ -72,19 +74,6 @@ export const mountShell = (root: HTMLElement, games: readonly GameSummary[]): Sh
       }
     }
   };
-
-  for (const game of games) {
-    const tab = document.createElement("button");
-    tab.type = "button";
-    tab.setAttribute("role", "tab");
-    tab.textContent = game.label;
-    tab.addEventListener("click", () => {
-      window.location.hash = game.slug;
-      select(game.slug);
-    });
-    tabs.set(game.slug, tab);
-    tabList.append(tab);
-  }
 
   root.append(header, frame);
 

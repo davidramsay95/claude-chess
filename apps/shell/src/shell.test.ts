@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { mountShell, resolveSelectedSlug, type GameSummary } from "./shell.ts";
+import type { GameSummary } from "./gameSummary.ts";
+import { mountShell, resolveSelectedSlug } from "./shell.ts";
 
 const games: GameSummary[] = [
-  { slug: "fable_5-1", label: "Fable 5.1" },
-  { slug: "opus_5-5", label: "Opus 5.5" },
+  { slug: "fable_5-1", label: "Fable 5.1", date: null },
+  { slug: "opus_5-5", label: "Opus 5.5", date: null },
 ];
 
 describe("resolveSelectedSlug", () => {
@@ -36,20 +37,26 @@ describe("mountShell", () => {
     return root;
   };
 
-  it("renders one tab per game and loads the first game in the frame", () => {
+  const options = (root: HTMLElement): HTMLButtonElement[] => [...root.querySelectorAll<HTMLButtonElement>(".model-select-option")];
+
+  it("shows the first game in the selector and loads it in the frame", () => {
     const root = mount();
-    const tabs = root.querySelectorAll<HTMLButtonElement>('[role="tab"]');
-    expect([...tabs].map((tab) => tab.textContent)).toEqual(["Fable 5.1", "Opus 5.5"]);
-    expect(tabs[0].getAttribute("aria-selected")).toBe("true");
+    expect(root.querySelector(".model-select-trigger")?.textContent).toContain("Fable 5.1");
+    expect(options(root).map((option) => option.textContent)).toEqual(["Fable 5.1", "Opus 5.5"]);
     expect(root.querySelector("iframe")?.getAttribute("src")).toBe("/play/fable_5-1/");
   });
 
-  it("switches the frame and the URL hash when another tab is clicked", () => {
+  it("switches the frame and the URL hash when another game is chosen", () => {
     const root = mount();
-    root.querySelectorAll<HTMLButtonElement>('[role="tab"]')[1].click();
+    options(root)[1].click();
     expect(root.querySelector("iframe")?.getAttribute("src")).toBe("/play/opus_5-5/");
     expect(window.location.hash).toBe("#opus_5-5");
-    expect(root.querySelectorAll('[role="tab"]')[1].getAttribute("aria-selected")).toBe("true");
+    expect(root.querySelector(".model-select-trigger")?.textContent).toContain("Opus 5.5");
+  });
+
+  it("links the title to the home page", () => {
+    const root = mount();
+    expect(root.querySelector("h1 a")?.getAttribute("href")).toBe("/");
   });
 
   it("shows an empty message when there are no games", () => {
@@ -64,7 +71,7 @@ describe("mountShell", () => {
     expect(handle?.frame).toBe(root.querySelector("iframe"));
     expect(handle?.games).toEqual(games);
     expect(handle?.getSelectedSlug()).toBe("fable_5-1");
-    root.querySelectorAll<HTMLButtonElement>('[role="tab"]')[1].click();
+    options(root)[1].click();
     expect(handle?.getSelectedSlug()).toBe("opus_5-5");
   });
 
@@ -79,7 +86,7 @@ describe("mountShell", () => {
     const listener = vi.fn();
     const unsubscribe = handle?.onSelectionChange(listener);
 
-    root.querySelectorAll<HTMLButtonElement>('[role="tab"]')[1].click();
+    options(root)[1].click();
     expect(listener).toHaveBeenCalledWith("opus_5-5");
 
     window.location.hash = "fable_5-1";
@@ -88,7 +95,7 @@ describe("mountShell", () => {
 
     unsubscribe?.();
     listener.mockClear();
-    root.querySelectorAll<HTMLButtonElement>('[role="tab"]')[1].click();
+    options(root)[1].click();
     expect(listener).not.toHaveBeenCalled();
   });
 
@@ -97,7 +104,7 @@ describe("mountShell", () => {
     const handle = mountShell(root, games);
     const listener = vi.fn();
     handle?.onSelectionChange(listener);
-    root.querySelectorAll<HTMLButtonElement>('[role="tab"]')[0].click();
+    options(root)[0].click();
     expect(listener).not.toHaveBeenCalled();
   });
 

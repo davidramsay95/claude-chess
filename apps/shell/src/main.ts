@@ -1,7 +1,8 @@
 import "./style.css";
 import { mountAccountMenu } from "./account.ts";
 import { mountSavedGames } from "./savedGames.ts";
-import { mountShell, type GameSummary } from "./shell.ts";
+import type { GameSummary } from "./gameSummary.ts";
+import { mountShell } from "./shell.ts";
 
 const loadGames = async (): Promise<GameSummary[]> => {
   const response = await fetch("/games.json");
