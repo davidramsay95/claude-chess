@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Opus Chess</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23171a21'/%3E%3Cpath d='M9 24h14c0-2-2-2.6-2.9-3.6h-8.2C11 21.4 9 22 9 24Z' fill='%23e9c46a'/%3E%3Cpath d='M12.5 20.4c-.8-3-.4-5.6.6-7.4l-2.3-1.4 1.6-2.2 2.1 1L16 8l1.5 2.4 2.1-1 1.6 2.2-2.3 1.4c1 1.8 1.4 4.4.6 7.4Z' fill='%23e9c46a'/%3E%3C/svg%3E"
+    />
+    <meta name="description" content="Play chess against a self-written engine at four strengths." />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <main class="layout">
+        <section class="board-pane">
+          <div class="player-strip" data-role="top">
+            <span class="player-name"></span>
+            <span class="player-material"></span>
+            <span class="player-captures"></span>
+          </div>
+          <div class="board-frame">
+            <div id="board" role="grid" aria-label="Chess board"></div>
+          </div>
+          <div class="player-strip" data-role="bottom">
+            <span class="player-name"></span>
+            <span class="player-material"></span>
+            <span class="player-captures"></span>
+          </div>
+        </section>
+
+        <aside class="side-pane">
+          <header class="brand">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <div>
+              <h1>Opus Chess</h1>
+              <p id="brand-sub">Self-written engine</p>
+            </div>
+          </header>
+
+          <div class="status" id="status" role="status" aria-live="polite">
+            <span class="status-line" id="status-line">No game yet</span>
+            <span class="status-detail" id="status-detail"></span>
+          </div>
+
+          <div class="move-panel">
+            <div class="move-scroll" id="moves" aria-label="Move list"></div>
+            <div class="history-bar">
+              <button type="button" id="nav-start" title="First move" aria-label="Go to the start">&#124;&#9664;</button>
+              <button type="button" id="nav-prev" title="Previous move" aria-label="Previous move">&#9664;</button>
+              <button type="button" id="nav-next" title="Next move" aria-label="Next move">&#9654;</button>
+              <button type="button" id="nav-end" title="Latest move" aria-label="Go to the latest move">&#9654;&#124;</button>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button type="button" class="btn" id="btn-new">New game</button>
+            <button type="button" class="btn" id="btn-undo">Take back</button>
+            <button type="button" class="btn" id="btn-flip">Flip board</button>
+            <button type="button" class="btn" id="btn-resign">Resign</button>
+            <button type="button" class="btn" id="btn-export">Export game</button>
+            <button type="button" class="btn" id="btn-import">Import game</button>
+            <button type="button" class="btn btn-toggle" id="btn-sound" aria-pressed="true">Sound on</button>
+          </div>
+        </aside>
+      </main>
+
+      <div class="overlay" id="setup" hidden>
+        <form class="card" id="setup-form">
+          <h2>New game</h2>
+          <fieldset>
+            <legend>Play as</legend>
+            <div class="choice-row" id="colour-choices">
+              <button type="button" class="choice" data-colour="white">White</button>
+              <button type="button" class="choice" data-colour="black">Black</button>
+              <button type="button" class="choice" data-colour="random">Random</button>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Difficulty</legend>
+            <div class="choice-row" id="difficulty-choices">
+              <button type="button" class="choice" data-difficulty="easy">Easy</button>
+              <button type="button" class="choice" data-difficulty="medium">Medium</button>
+              <button type="button" class="choice" data-difficulty="hard">Hard</button>
+              <button type="button" class="choice" data-difficulty="expert">Expert</button>
+            </div>
+            <p class="hint" id="difficulty-hint"></p>
+          </fieldset>
+          <div class="card-actions">
+            <button type="submit" class="btn btn-primary" id="setup-start">Start game</button>
+            <button type="button" class="btn" id="setup-resume" hidden>Resume last game</button>
+            <button type="button" class="btn" id="setup-import">Import game</button>
+            <button type="button" class="btn btn-ghost" id="setup-cancel" hidden>Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="overlay" id="promotion" hidden>
+        <div class="card card-narrow">
+          <h2>Promote to</h2>
+          <div class="promo-row" id="promo-row"></div>
+          <div class="card-actions">
+            <button type="button" class="btn btn-ghost" id="promo-cancel">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="overlay" id="transfer" hidden>
+        <div class="card">
+          <h2 id="transfer-title">Import game</h2>
+          <p class="hint" id="transfer-hint"></p>
+          <textarea id="transfer-text" spellcheck="false" rows="8"></textarea>
+          <div class="card-actions" id="transfer-actions"></div>
+        </div>
+      </div>
+
+      <div class="toast" id="toast" role="alert" hidden></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
