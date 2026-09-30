@@ -18,5 +18,11 @@
       "database_id": "489494dc-c18e-48b3-a096-27d543d36f9f",
       "migrations_dir": "worker/migrations"
     }
-  ]
+  ],
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
+  }
 }
