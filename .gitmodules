@@ -1,0 +1,33 @@
+[submodule "games/fable_5-0_20260930"]
+	path = games/fable_5-0_20260930
+	url = https://github.com/davidramsay95/claude-chess_fable_5-0_20260930.git
+[submodule "games/fable_5-1_20260929"]
+	path = games/fable_5-1_20260929
+	url = https://github.com/davidramsay95/claude-chess_fable_5-1_20260929.git
+[submodule "games/haiku_4-5_20260930"]
+	path = games/haiku_4-5_20260930
+	url = https://github.com/davidramsay95/claude-chess_haiku_4-5_20260930.git
+[submodule "games/opus_4-6_20260930"]
+	path = games/opus_4-6_20260930
+	url = https://github.com/davidramsay95/claude-chess_opus_4-6_20260930.git
+[submodule "games/opus_4-7_20260930"]
+	path = games/opus_4-7_20260930
+	url = https://github.com/davidramsay95/claude-chess_opus_4-7_20260930.git
+[submodule "games/opus_4-8_20260930"]
+	path = games/opus_4-8_20260930
+	url = https://github.com/davidramsay95/claude-chess_opus_4-8_20260930.git
+[submodule "games/opus_5-0_20260930"]
+	path = games/opus_5-0_20260930
+	url = https://github.com/davidramsay95/claude-chess_opus_5-0_20260930.git
+[submodule "games/opus_5-5_20260929"]
+	path = games/opus_5-5_20260929
+	url = https://github.com/davidramsay95/claude-chess_opus_5-5_20260929.git
+[submodule "games/sonnet_4-6_20260930"]
+	path = games/sonnet_4-6_20260930
+	url = https://github.com/davidramsay95/claude-chess_sonnet_4-6_20260930.git
+[submodule "games/sonnet_5-0_20260930"]
+	path = games/sonnet_5-0_20260930
+	url = https://github.com/davidramsay95/claude-chess_sonnet_5-0_20260930.git
+[submodule "games/sonnet_5-5_20260929"]
+	path = games/sonnet_5-5_20260929
+	url = https://github.com/davidramsay95/claude-chess_sonnet_5-5_20260929.git

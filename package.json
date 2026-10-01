@@ -8,7 +8,7 @@
     "build:games": "node scripts/build-games.ts",
     "build:shell": "npm --prefix apps/shell run build",
     "build": "npm run build:games && npm run build:shell",
-    "build:ci": "npm --prefix worker ci && npm --prefix apps/shell ci && npm run build",
+    "build:ci": "git submodule update --init && npm --prefix worker ci && npm --prefix apps/shell ci && npm run build",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"
   },
