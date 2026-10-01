@@ -1,5 +1,6 @@
 import "./home.css";
 import type { GameSummary } from "./gameSummary.ts";
+import { mountAccountMenu } from "./account.ts";
 import { renderBoard, renderChallengers } from "./home.ts";
 
 // A Ruy Lopez after 3.Bb5, with the bishop's move highlighted.
@@ -11,6 +12,12 @@ if (board === null) {
   throw new Error("Missing #board element");
 }
 renderBoard(board, BOARD_PLACEMENT, LAST_MOVE, "A chess position after 1.e4 e5 2.Nf3 Nc6 3.Bb5, with White's bishop on b5");
+
+const account = document.querySelector<HTMLElement>(".account");
+if (account === null) {
+  throw new Error("Missing .account element");
+}
+mountAccountMenu(account);
 
 const challengers = document.getElementById("challengers");
 if (challengers === null) {
