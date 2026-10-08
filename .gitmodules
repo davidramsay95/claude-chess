@@ -31,3 +31,6 @@
 [submodule "games/sonnet_5-5_20260929"]
 	path = games/sonnet_5-5_20260929
 	url = https://github.com/davidramsay95/claude-chess_sonnet_5-5_20260929.git
+[submodule "games/haiku_5-5_20261008"]
+	path = games/haiku_5-5_20261008
+	url = https://github.com/davidramsay95/claude-chess_haiku_5-5_20261008.git
