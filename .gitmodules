@@ -34,3 +34,6 @@
 [submodule "games/haiku_5-5_20261008"]
 	path = games/haiku_5-5_20261008
 	url = https://github.com/davidramsay95/claude-chess_haiku_5-5_20261008.git
+[submodule "games/fable_5-2_20261110"]
+	path = games/fable_5-2_20261110
+	url = https://github.com/davidramsay95/claude-chess_fable_5-2_20261110.git
