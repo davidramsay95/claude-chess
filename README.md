@@ -13,6 +13,7 @@ Each game is a submodule at `games/<model>_<version>-<subversion>_<YYYYMMDD>`, b
 | Model | Released | Repository |
 |---|---|---|
 | Fable 5.2 | 2026-11-09 | [claude-chess_fable_5-2_20261110](https://github.com/davidramsay95/claude-chess_fable_5-2_20261110) |
+| Haiku 5.5 | 2026-10-07 | [claude-chess_haiku_5-5_20261008](https://github.com/davidramsay95/claude-chess_haiku_5-5_20261008) |
 | Sonnet 5.5 | 2026-09-28 | [claude-chess_sonnet_5-5_20260929](https://github.com/davidramsay95/claude-chess_sonnet_5-5_20260929) |
 | Opus 5.5 | 2026-09-22 | [claude-chess_opus_5-5_20260929](https://github.com/davidramsay95/claude-chess_opus_5-5_20260929) |
 | Fable 5.1 | 2026-09-01 | [claude-chess_fable_5-1_20260929](https://github.com/davidramsay95/claude-chess_fable_5-1_20260929) |
