@@ -27,6 +27,7 @@ export const RELEASE_DATES: Readonly<Record<string, string>> = {
   "opus_5-5": "2026-09-22",
   "sonnet_5-5": "2026-09-28",
   "haiku_5-5": "2026-10-07",
+  "fable_5-2": "2026-11-09",
 };
 
 const GAME_FOLDER_PATTERN = /^([a-z]+)_(\d+)-(\d+)(?:_(\d{4})(\d{2})(\d{2}))?$/;
